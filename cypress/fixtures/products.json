@@ -1,0 +1,73 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Test Product 1",
+      "price": 29.99,
+      "category": "Electronics",
+      "description": "Primary test product for e-commerce scenarios",
+      "availability": "in-stock",
+      "testPriority": "critical"
+    },
+    {
+      "id": 2,
+      "name": "Test Product 2", 
+      "price": 49.99,
+      "category": "Clothing",
+      "description": "Secondary test product for cart operations",
+      "availability": "in-stock",
+      "testPriority": "regression"
+    },
+    {
+      "id": 3,
+      "name": "Out of Stock Product", 
+      "price": 99.99,
+      "category": "Electronics",
+      "description": "Product for testing out of stock scenarios",
+      "availability": "out-of-stock",
+      "testPriority": "negative",
+      "expectedBehavior": "Add to cart should be disabled"
+    }
+  ],
+  "productCategories": {
+    "electronics": {
+      "name": "Electronics",
+      "testCoverage": "high",
+      "description": "Electronics category for product browsing tests"
+    },
+    "clothing": {
+      "name": "Clothing",
+      "testCoverage": "medium", 
+      "description": "Clothing category for category filtering tests"
+    },
+    "books": {
+      "name": "Books",
+      "testCoverage": "low",
+      "description": "Books category - known to be empty in test environment",
+      "knownIssue": "Category shows no products"
+    }
+  },
+  "testScenarios": {
+    "addToCart": {
+      "description": "Add products to shopping cart",
+      "priority": "critical",
+      "testData": "products[0]"
+    },
+    "removeFromCart": {
+      "description": "Remove products from shopping cart", 
+      "priority": "high",
+      "testData": "products[1]"
+    },
+    "outOfStock": {
+      "description": "Handle out of stock products",
+      "priority": "medium",
+      "testData": "products[2]"
+    }
+  },
+  "metadata": {
+    "environment": "test",
+    "dataVersion": "1.1",
+    "lastUpdated": "2024-01-15",
+    "notes": "Product test data for e-commerce automation with Mochawesome reporting"
+  }
+}

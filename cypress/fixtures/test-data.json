@@ -1,0 +1,168 @@
+{
+  "shippingInfo": {
+    "valid": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "address": "1234 Calle Primavera",
+      "city": "Bogotá",
+      "state": "Cundinamarca",
+      "zip": "110111",
+      "country": "Colombia"
+    },
+    "invalid": {
+      "firstName": "",
+      "lastName": "",
+      "address": "",
+      "city": "",
+      "state": "",
+      "zip": "invalid",
+      "country": "",
+      "description": "Invalid shipping data for form validation testing",
+      "expectedErrors": [
+        "First name is required",
+        "Last name is required",
+        "Address is required",
+        "Invalid ZIP code format"
+      ]
+    }
+  },
+  "paymentInfo": {
+    "valid": {
+      "cardNumber": "4111111111111111",
+      "expiryDate": "2025-12",
+      "securityCode": "123",
+      "cardName": "John Doe",
+      "cardType": "Visa",
+      "description": "Valid Visa test card for payment processing"
+    },
+    "invalid": {
+      "cardNumber": "1234567890123456",
+      "expiryDate": "2020-01",
+      "securityCode": "12345",
+      "cardName": "Test123!@#",
+      "description": "Invalid payment data for validation testing",
+      "expectedErrors": [
+        "Invalid card number",
+        "Invalid expiry month",
+        "Expired card",
+        "Invalid CVV length",
+        "Invalid cardholder name format"
+      ]
+    },
+    "testCards": {
+      "visa": {
+        "cardNumber": "4111111111111111",
+        "expiryDate": "2025-12",
+        "securityCode": "123",
+        "cardName": "John Doe",
+        "cardType": "Visa",
+        "description": "Visa test card"
+      },
+      "mastercard": {
+        "cardNumber": "5555555555554444",
+        "expiryDate": "2025-12", 
+        "securityCode": "123",
+        "cardName": "John Doe",
+        "cardType": "MasterCard",
+        "description": "MasterCard test card"
+      },
+      "amex": {
+        "cardNumber": "378282246310005",
+        "expiryDate": "2025-12",
+        "securityCode": "1234",
+        "cardName": "John Doe",
+        "cardType": "American Express",
+        "description": "American Express test card"
+      }
+    }
+  },
+  "checkoutData": {
+    "complete": {
+      "description": "Complete checkout flow with valid data",
+      "priority": "critical",
+      "expectedResult": "Payment error due to test card limitations",
+      "personalInfo": {
+        "name": "John",
+        "lastName": "Doe",
+        "address": "1234 Calle Primavera",
+        "country": "Colombia"
+      },
+      "paymentInfo": {
+        "cardNumber": "4111111111111111",
+        "expiryDate": "2025-12",
+        "securityCode": "123",
+        "cardName": "John Doe"
+      }
+    },
+    "withInvalidCard": {
+      "description": "Checkout flow with invalid card data for validation testing",
+      "priority": "high",
+      "expectedResult": "Payment validation errors displayed",
+      "personalInfo": {
+        "name": "John",
+        "lastName": "Doe", 
+        "address": "1234 Calle Primavera",
+        "country": "Colombia"
+      },
+      "paymentInfo": {
+        "cardNumber": "1234567890123456",
+        "expiryDate": "2025-12",
+        "securityCode": "123",
+        "cardName": "Invalid Name123!@#"
+      }
+    }
+  },
+  "testScenarios": {
+    "checkout": {
+      "complete": {
+        "description": "Complete checkout flow with valid data",
+        "priority": "critical",
+        "expectedResult": "Payment error due to test card limitations"
+      },
+      "validation": {
+        "description": "Form validation with invalid data",
+        "priority": "high",
+        "expectedResult": "Validation errors displayed"
+      }
+    }
+  },
+  "emailGeneration": {
+    "pattern": "EmailGenerator utility generates context-specific emails",
+    "examples": {
+      "checkout": "checkout.1234567890.abc12@example.com",
+      "registration": "register.1234567890.xyz34@example.com",
+      "login": "login.1234567890.def56@example.com"
+    },
+    "contexts": [
+      "registration",
+      "checkout", 
+      "login",
+      "forgot"
+    ],
+    "usage": {
+      "pageObjects": "import EmailGenerator from '../support/emailGenerator'; const email = EmailGenerator.forCheckout();",
+      "cypressCommands": "cy.generateUniqueEmail('prefix') or cy.getUniqueEmail('context')",
+      "legacyCommands": "cy.generateUniqueTestData('prefix') - still available for full user objects"
+    },
+    "description": "Dynamic email generation using centralized EmailGenerator utility with context-specific methods"
+  },
+  "metadata": {
+    "environment": "test",
+    "dataVersion": "2.2",
+    "lastUpdated": "2025-05-28",
+    "notes": "Enhanced for checkout form compatibility with Colombian site and EmailGenerator integration. Fixed cardName field missing in all payment sections.",
+    "features": [
+      "Colombian address and country format",
+      "Valid test card numbers for payment testing",
+      "EmailGenerator utility integration",
+      "Context-specific test data organization",
+      "Backward compatibility with existing commands",
+      "Complete cardName field support for all payment scenarios"
+    ],
+    "knownLimitations": [
+      "Test credit cards will fail with 'Tarjeta inválida' error",
+      "EmailGenerator creates unique emails but payment still fails due to card limitations",
+      "Aquatic section navigation is broken (href='#')"
+    ]
+  }
+}

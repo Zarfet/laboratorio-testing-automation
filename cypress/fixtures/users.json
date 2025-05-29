@@ -1,0 +1,51 @@
+{
+  "validUsers": [
+    {
+      "email": "huge.test@gmail.com",
+      "password": "Huge2025.",
+      "role": "customer",
+      "validCreditCard": "xxxx",
+      "description": "Primary test user for critical scenarios",
+      "testPriority": "critical",
+      "lastUpdated": "2024-01-15"
+    },
+    {
+      "email": "huge2.test@gmail.com",
+      "password": "Monday12.",
+      "role": "customer",
+      "validCreditCard": "xxxx",
+      "description": "Secondary test user for regression testing",
+      "testPriority": "regression",
+      "lastUpdated": "2024-01-15"
+    }
+  ],
+  "invalidUsers": [
+    {
+      "email": "invalid@test.com",
+      "password": "wrongpass",
+      "description": "Invalid user for negative testing scenarios",
+      "expectedError": "No pudimos iniciar sesión con estas credenciales",
+      "testPriority": "negative"
+    },
+    {
+      "email": "nonexistent@fake.com",
+      "password": "fakepass123",
+      "description": "Non-existent user for authentication validation",
+      "expectedError": "Usuario no encontrado",
+      "testPriority": "negative"
+    },
+    {
+      "email": "huge.test@gmail.com",
+      "password": "wrongpassword",
+      "description": "Valid email with wrong password",
+      "expectedError": "Credenciales incorrectas",
+      "testPriority": "negative"
+    }
+  ],
+  "testMetadata": {
+    "environment": "test",
+    "dataVersion": "1.2",
+    "lastValidated": "2024-01-15",
+    "notes": "Test users for Mochawesome reporting validation"
+  }
+}
