@@ -142,4 +142,4 @@ jobs:
         with:
           name: cypress-screenshots-${{ matrix.browser }}
           path: cypress/screenshots/
-          retention-days: 30
+          retention-days: 7
