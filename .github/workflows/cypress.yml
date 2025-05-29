@@ -69,14 +69,9 @@ jobs:
           # Find the most recent JSON report file
           JSON_FILE=$(find cypress/reports -name "report_*.json" -type f | sort | tail -1)
           
-          echo "🔍 DEBUG: Found JSON file: $JSON_FILE" >> $GITHUB_STEP_SUMMARY
-          
           if [ -f "$JSON_FILE" ]; then
             echo "📊 **Real-time metrics from Cypress JSON report: $(basename $JSON_FILE)**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            
-            # Debug: Show first few lines of JSON
-            echo "🔍 DEBUG: JSON file size: $(wc -c < "$JSON_FILE") bytes" >> $GITHUB_STEP_SUMMARY
             
             # Extract real test data using jq
             TOTAL_TESTS=$(jq -r '.stats.tests // 0' "$JSON_FILE")
@@ -85,17 +80,13 @@ jobs:
             PENDING_TESTS=$(jq -r '.stats.pending // 0' "$JSON_FILE")
             SKIPPED_TESTS=$(jq -r '.stats.skipped // 0' "$JSON_FILE")
             DURATION=$(jq -r '.stats.duration // 0' "$JSON_FILE")
-            START_TIME=$(jq -r '.stats.start' "$JSON_FILE")
-            END_TIME=$(jq -r '.stats.end' "$JSON_FILE")
-            
-            echo "🔍 DEBUG: Extracted values - Total: $TOTAL_TESTS, Passed: $PASSED_TESTS, Failed: $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
             
             # Convert duration from ms to readable format
             DURATION_SEC=$((DURATION / 1000))
             DURATION_MIN=$((DURATION_SEC / 60))
             DURATION_REMAINDER=$((DURATION_SEC % 60))
             
+            # Dynamic metrics table
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
             echo "| 🧪 Total Tests | $TOTAL_TESTS |" >> $GITHUB_STEP_SUMMARY
@@ -106,60 +97,45 @@ jobs:
             echo "| ⏱️ Duration | ${DURATION_MIN}m ${DURATION_REMAINDER}s |" >> $GITHUB_STEP_SUMMARY
             echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
             echo "| 📺 Viewport | 1440x900 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🏗️ Framework | Cypress + Page Object Model |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🏗️ Framework | Cypress + POM |" >> $GITHUB_STEP_SUMMARY
             
-            # Calculate success rate
+            # Calculate and show success rate
             if [ "$TOTAL_TESTS" -gt 0 ]; then
               SUCCESS_RATE=$((PASSED_TESTS * 100 / TOTAL_TESTS))
               echo "| 📈 Success Rate | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
             fi
             
-          else
-            echo "⚠️ **No JSON report found** - Using static summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            
+            # Dynamic test status analysis
+            if [ "$FAILED_TESTS" -gt 0 ]; then
+              echo "⚠️ **$FAILED_TESTS test(s) failing** - Check artifacts for details" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            if [ "$PASSED_TESTS" -eq "$TOTAL_TESTS" ]; then
+              echo "🎉 **All tests passing!** Pipeline is healthy" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            # Show test execution details
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📊 Test Execution Summary:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Execution Time**: $(date '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+            echo "- **JSON Report Size**: $(wc -c < "$JSON_FILE") bytes" >> $GITHUB_STEP_SUMMARY
+            echo "- **Average Test Duration**: $((DURATION / TOTAL_TESTS))ms per test" >> $GITHUB_STEP_SUMMARY
+            
+          else
+            echo "❌ **No JSON report found** - Tests may not have executed properly" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Status | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🚀 Pipeline Status | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🚀 Pipeline | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
             echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| 📊 Framework | Cypress + POM |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⚠️ Issue | No test results JSON found |" >> $GITHUB_STEP_SUMMARY
           fi
           
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Critical Test Scenarios:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Authentication Flow** ✅ User login/logout validation" >> $GITHUB_STEP_SUMMARY
-          echo "- **Complete Purchase Journey** ⚠️ End-to-end flow (payment bug documented)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Form Validation** ✅ Required fields, email format, input validation" >> $GITHUB_STEP_SUMMARY
-          echo "- **Cart Management** ✅ Add/remove items, cart state" >> $GITHUB_STEP_SUMMARY
-          echo "- **Product Sections** ⚠️ Navigation validation (aquatic section bug)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Security Code Validation** ⚠️ Input type validation (accepts letters - bug)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Invalid Credit Cards** ✅ Form-level validation testing" >> $GITHUB_STEP_SUMMARY
-          echo "- **User Registration** ⚠️ Account creation flow (validation bugs documented)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🐛 Production Bugs Documented:" >> $GITHUB_STEP_SUMMARY
-          echo "1. **💳 Payment Processing Bug**: Valid test cards (4111111111111111) rejected with 'tarjeta inválida'" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Impact**: Customers cannot complete purchases" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Business Priority**: CRITICAL" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "2. **🏊‍♂️ Aquatic Section Navigation**: href='#' instead of functional link" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Impact**: Users cannot browse aquatic products" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Business Priority**: HIGH" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "3. **🔒 Security Code Input Validation**: Accepts letters instead of numbers only" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Impact**: Invalid payment data can reach processing" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Business Priority**: MEDIUM" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "4. **📧 Registration Email Validation**: Button remains enabled with invalid email formats" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Impact**: Users can attempt registration with invalid emails" >> $GITHUB_STEP_SUMMARY
-          echo "   - **Business Priority**: MEDIUM" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📁 Artifacts & Reports:" >> $GITHUB_STEP_SUMMARY
-          echo "- 📊 **Mochawesome HTML Report**: Download from artifacts for detailed results" >> $GITHUB_STEP_SUMMARY
-          echo "- 📸 **Screenshots**: Failure screenshots available in artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏗️ **Architecture**: Page Object Model with fixtures-based test data" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔄 **CI/CD**: Cross-browser testing (Chrome + Firefox)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "*🎯 **QA Craft Growth Challenge** | Automated by Huge QA Team | $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
+          echo "*🎯 QA Automation Pipeline | $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -177,4 +153,4 @@ jobs:
         with:
           name: cypress-screenshots-${{ matrix.browser }}
           path: cypress/screenshots/
-          retention-days: 30
+          retention-days: 10
