@@ -66,11 +66,11 @@ jobs:
           echo "## 🧪 QA Craft Growth Challenge - Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Find the JSON report file
-          JSON_FILE=$(find cypress/reports -name "*.json" -type f | head -1)
+          # Find the most recent JSON report file
+          JSON_FILE=$(find cypress/reports -name "report_*.json" -type f | sort | tail -1)
           
           if [ -f "$JSON_FILE" ]; then
-            echo "📊 **Real-time metrics from Cypress JSON report:**" >> $GITHUB_STEP_SUMMARY
+            echo "📊 **Real-time metrics from Cypress JSON report: $(basename $JSON_FILE)**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             
             # Extract real test data using jq
