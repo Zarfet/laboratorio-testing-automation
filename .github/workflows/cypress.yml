@@ -39,6 +39,27 @@ jobs:
           config: video=false,viewportWidth=1440,viewportHeight=900
         continue-on-error: true
 
+      - name: Debug JSON files location
+        if: always()
+        run: |
+          echo "🔍 Debugging JSON file locations..."
+          echo "Current directory structure:"
+          find . -type d -name "*cypress*" -o -name "*report*" | head -10
+          echo ""
+          echo "Looking for JSON files in common locations:"
+          find . -name "*.json" -type f | grep -E "(cypress|mochawesome|report)" | head -10
+          echo ""
+          echo "Cypress reports directory contents:"
+          ls -la cypress/reports/ || echo "❌ cypress/reports/ not found"
+          echo ""
+          echo "Alternative report locations:"
+          ls -la cypress/results/ || echo "❌ cypress/results/ not found"
+          ls -la mochawesome-report/ || echo "❌ mochawesome-report/ not found"
+          ls -la reports/ || echo "❌ reports/ not found"
+          echo ""
+          echo "All .json files in project:"
+          find . -name "*.json" -type f | head -20
+
       - name: Generate Test Summary with Real Metrics
         if: always()
         run: |
@@ -142,4 +163,4 @@ jobs:
         with:
           name: cypress-screenshots-${{ matrix.browser }}
           path: cypress/screenshots/
-          retention-days: 7
+          retention-days: 30
