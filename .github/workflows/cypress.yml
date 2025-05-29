@@ -69,14 +69,21 @@ jobs:
           # Find the most recent JSON report file
           JSON_FILE=$(find cypress/reports -name "report_*.json" -type f | sort | tail -1)
           
+          echo "🔍 DEBUG: Found JSON file: $JSON_FILE" >> $GITHUB_STEP_SUMMARY
+          
           if [ -f "$JSON_FILE" ]; then
             echo "📊 **Real-time metrics from Cypress JSON report: $(basename $JSON_FILE)**" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Debug: Show first few lines of JSON
+            echo "🔍 DEBUG: JSON file size: $(wc -c < "$JSON_FILE") bytes" >> $GITHUB_STEP_SUMMARY
             
             # Extract real test data using jq
             TOTAL_TESTS=$(jq -r '.stats.tests // 0' "$JSON_FILE")
             PASSED_TESTS=$(jq -r '.stats.passes // 0' "$JSON_FILE")
             FAILED_TESTS=$(jq -r '.stats.failures // 0' "$JSON_FILE")
+            
+            echo "🔍 DEBUG: Extracted values - Total: $TOTAL_TESTS, Passed: $PASSED_TESTS, Failed: $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
             PENDING_TESTS=$(jq -r '.stats.pending // 0' "$JSON_FILE")
             SKIPPED_TESTS=$(jq -r '.stats.skipped // 0' "$JSON_FILE")
             DURATION=$(jq -r '.stats.duration // 0' "$JSON_FILE")
