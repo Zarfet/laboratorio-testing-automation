@@ -11,7 +11,7 @@
     "cypress",
     "e2e-testing",
     "automation",
-    "cypress-mochawesome-reporter",
+    "mochawesome",
     "page-object-model",
     "github-actions",
     "qa-testing"
@@ -24,48 +24,40 @@
   },
   "scripts": {
     "postinstall": "cypress verify",
-    
     "cy:open": "cypress open",
     "cy:version": "cypress version",
-    
     "cy:run": "NODE_OPTIONS='' cypress run",
     "cy:run:headless": "NODE_OPTIONS='' cypress run --headless",
     "cy:run:headed": "NODE_OPTIONS='' cypress run --headed",
     "cy:run:chrome": "NODE_OPTIONS='' cypress run --browser chrome",
     "cy:run:firefox": "NODE_OPTIONS='' cypress run --browser firefox",
     "cy:run:edge": "NODE_OPTIONS='' cypress run --browser edge",
-    
     "cy:run:critical": "NODE_OPTIONS='' cypress run --spec 'cypress/e2e/critical-scenarios/**/*.cy.js'",
     "cy:run:critical:chrome": "NODE_OPTIONS='' cypress run --browser chrome --spec 'cypress/e2e/critical-scenarios/**/*.cy.js'",
     "cy:run:critical:firefox": "NODE_OPTIONS='' cypress run --browser firefox --spec 'cypress/e2e/critical-scenarios/**/*.cy.js'",
     "cy:run:critical:json": "NODE_OPTIONS='' cypress run --spec 'cypress/e2e/critical-scenarios/**/*.cy.js' --reporter json --reporter-options 'mochaFile=cypress/results/cypress-results.json'",
-    
     "test:smoke": "NODE_OPTIONS='' cypress run --env grepTags=@smoke",
     "test:regression": "NODE_OPTIONS='' cypress run --env grepTags=@regression",
     "test:critical": "npm run clean:reports && npm run cy:run:critical && npm run report:open",
     "test:all": "npm run clean:reports && npm run cy:run && npm run report:open",
-    
     "report:open": "open cypress/reports/report.html || start cypress/reports/report.html || xdg-open cypress/reports/report.html",
-    
     "clean": "rimraf cypress/screenshots cypress/reports logs/*.log",
     "clean:reports": "rimraf cypress/reports",
     "clean:artifacts": "rimraf cypress/screenshots",
     "clean:logs": "rimraf logs/*.log",
     "clean:all": "npm run clean && rimraf node_modules/.cache",
-    
     "ci:test": "npm run clean:reports && NODE_OPTIONS='' npm run cy:run:critical:chrome",
     "ci:test:all": "npm run clean:reports && NODE_OPTIONS='' npm run cy:run",
-    
     "pretest": "npm run clean:artifacts",
     "lint:check": "echo 'Linting check placeholder - add ESLint if needed'",
     "audit:deps": "npm audit --audit-level moderate"
   },
   "devDependencies": {
-    "cypress": "^13.15.0",
-    "cypress-mochawesome-reporter": "^3.8.2",
+    "cypress": "^13.17.0",
+    "mochawesome": "^7.1.3",
     "rimraf": "^5.0.5"
   },
   "cypress": {
-    "version": "13.15.0"
+    "version": "13.17.0"
   }
 }

@@ -63,16 +63,13 @@ jobs:
       - name: Generate Test Summary with Real Metrics
         if: always()
         run: |
-          echo "## 🧪 QA Craft Growth Challenge - Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "## QA Craft Growth Challenge - Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Find the most recent JSON report file
           JSON_FILE=$(find cypress/reports -name "report_*.json" -type f | sort | tail -1)
           
           if [ -f "$JSON_FILE" ]; then
-            echo "📊 **Real-time metrics from Cypress JSON report: $(basename $JSON_FILE)**" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
             # Extract real test data using jq
             TOTAL_TESTS=$(jq -r '.stats.tests // 0' "$JSON_FILE")
             PASSED_TESTS=$(jq -r '.stats.passes // 0' "$JSON_FILE")
@@ -89,53 +86,23 @@ jobs:
             # Dynamic metrics table
             echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🧪 Total Tests | $TOTAL_TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| ✅ Passed | $PASSED_TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| ❌ Failed | $FAILED_TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| ⏸️ Pending | $PENDING_TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| ⏭️ Skipped | $SKIPPED_TESTS |" >> $GITHUB_STEP_SUMMARY
-            echo "| ⏱️ Duration | ${DURATION_MIN}m ${DURATION_REMAINDER}s |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| 📺 Viewport | 1440x900 |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🏗️ Framework | Cypress + POM |" >> $GITHUB_STEP_SUMMARY
+            echo "| Total Tests | $TOTAL_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Passed | $PASSED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Failed | $FAILED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Pending | $PENDING_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Skipped | $SKIPPED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| Duration | ${DURATION_MIN}m ${DURATION_REMAINDER}s |" >> $GITHUB_STEP_SUMMARY
+            echo "| Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
             
-            # Calculate and show success rate
+            # Calculate success rate
             if [ "$TOTAL_TESTS" -gt 0 ]; then
               SUCCESS_RATE=$((PASSED_TESTS * 100 / TOTAL_TESTS))
-              echo "| 📈 Success Rate | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
+              echo "| Success Rate | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
             fi
-            
-            echo "" >> $GITHUB_STEP_SUMMARY
-            
-            # Dynamic test status analysis
-            if [ "$FAILED_TESTS" -gt 0 ]; then
-              echo "⚠️ **$FAILED_TESTS test(s) failing** - Check artifacts for details" >> $GITHUB_STEP_SUMMARY
-            fi
-            
-            if [ "$PASSED_TESTS" -eq "$TOTAL_TESTS" ]; then
-              echo "🎉 **All tests passing!** Pipeline is healthy" >> $GITHUB_STEP_SUMMARY
-            fi
-            
-            # Show test execution details
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 📊 Test Execution Summary:" >> $GITHUB_STEP_SUMMARY
-            echo "- **Execution Time**: $(date '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-            echo "- **JSON Report Size**: $(wc -c < "$JSON_FILE") bytes" >> $GITHUB_STEP_SUMMARY
-            echo "- **Average Test Duration**: $((DURATION / TOTAL_TESTS))ms per test" >> $GITHUB_STEP_SUMMARY
             
           else
-            echo "❌ **No JSON report found** - Tests may not have executed properly" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Status | Value |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-            echo "| 🚀 Pipeline | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
-            echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
-            echo "| ⚠️ Issue | No test results JSON found |" >> $GITHUB_STEP_SUMMARY
+            echo "No test results found" >> $GITHUB_STEP_SUMMARY
           fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "---" >> $GITHUB_STEP_SUMMARY
-          echo "*🎯 QA Automation Pipeline | $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

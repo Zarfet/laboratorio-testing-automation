@@ -47,19 +47,18 @@ module.exports = defineConfig({
       // Add any custom environment variables here
     },
 
-    // Reporter configuration for Mochawesome
+    // Reporter configuration for Mochawesome - SINGLE REPORT
     reporter: 'mochawesome',
     reporterOptions: {
       reportDir: 'cypress/reports',
       overwrite: false,
       html: true,                    // Generate HTML report for viewing
-      json: true,                    // ✅ CRITICAL: Generate JSON for jq processing
+      json: true,                    // Generate JSON for jq processing
       charts: true,
       reportPageTitle: 'QA Craft Growth Challenge - Automation Test Results',
       embeddedScreenshots: true,
       inlineAssets: true,
-      reportFilename: 'report',
-      timestamp: 'mmddyyyy_HHMMss',
+      reportFilename: 'report',      // FIXED FILENAME - NO TIMESTAMP
       quiet: false,
       consoleReporter: 'spec'
     }
