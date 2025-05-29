@@ -82,13 +82,14 @@ jobs:
             TOTAL_TESTS=$(jq -r '.stats.tests // 0' "$JSON_FILE")
             PASSED_TESTS=$(jq -r '.stats.passes // 0' "$JSON_FILE")
             FAILED_TESTS=$(jq -r '.stats.failures // 0' "$JSON_FILE")
-            
-            echo "🔍 DEBUG: Extracted values - Total: $TOTAL_TESTS, Passed: $PASSED_TESTS, Failed: $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
             PENDING_TESTS=$(jq -r '.stats.pending // 0' "$JSON_FILE")
             SKIPPED_TESTS=$(jq -r '.stats.skipped // 0' "$JSON_FILE")
             DURATION=$(jq -r '.stats.duration // 0' "$JSON_FILE")
             START_TIME=$(jq -r '.stats.start' "$JSON_FILE")
             END_TIME=$(jq -r '.stats.end' "$JSON_FILE")
+            
+            echo "🔍 DEBUG: Extracted values - Total: $TOTAL_TESTS, Passed: $PASSED_TESTS, Failed: $FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
             
             # Convert duration from ms to readable format
             DURATION_SEC=$((DURATION / 1000))
@@ -132,6 +133,7 @@ jobs:
           echo "- **Product Sections** ⚠️ Navigation validation (aquatic section bug)" >> $GITHUB_STEP_SUMMARY
           echo "- **Security Code Validation** ⚠️ Input type validation (accepts letters - bug)" >> $GITHUB_STEP_SUMMARY
           echo "- **Invalid Credit Cards** ✅ Form-level validation testing" >> $GITHUB_STEP_SUMMARY
+          echo "- **User Registration** ⚠️ Account creation flow (validation bugs documented)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🐛 Production Bugs Documented:" >> $GITHUB_STEP_SUMMARY
           echo "1. **💳 Payment Processing Bug**: Valid test cards (4111111111111111) rejected with 'tarjeta inválida'" >> $GITHUB_STEP_SUMMARY
@@ -146,10 +148,15 @@ jobs:
           echo "   - **Impact**: Invalid payment data can reach processing" >> $GITHUB_STEP_SUMMARY
           echo "   - **Business Priority**: MEDIUM" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "4. **📧 Registration Email Validation**: Button remains enabled with invalid email formats" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Impact**: Users can attempt registration with invalid emails" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Business Priority**: MEDIUM" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📁 Artifacts & Reports:" >> $GITHUB_STEP_SUMMARY
           echo "- 📊 **Mochawesome HTML Report**: Download from artifacts for detailed results" >> $GITHUB_STEP_SUMMARY
           echo "- 📸 **Screenshots**: Failure screenshots available in artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- 🏗️ **Architecture**: Page Object Model with fixtures-based test data" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 **CI/CD**: Cross-browser testing (Chrome + Firefox)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "*🎯 **QA Craft Growth Challenge** | Automated by Huge QA Team | $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
