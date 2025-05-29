@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        browser: [chrome]
+        browser: [chrome, firefox]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+
+      - name: Install jq for JSON processing
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Install dependencies
         run: npm ci
@@ -33,37 +36,95 @@ jobs:
         with:
           browser: ${{ matrix.browser }}
           spec: cypress/e2e/**/*.cy.js
-          config: video=false
+          config: video=false,viewportWidth=1440,viewportHeight=900
         continue-on-error: true
 
-      - name: Generate Test Summary
+      - name: Generate Test Summary with Real Metrics
         if: always()
         run: |
-          echo "## 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## 🧪 QA Craft Growth Challenge - Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🚀 Pipeline Status | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📺 Viewport | 1440x900 |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📊 Framework | Cypress + POM |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📝 Reports | Mochawesome HTML |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📸 Screenshots | Available in artifacts |" >> $GITHUB_STEP_SUMMARY
+          
+          # Find the JSON report file
+          JSON_FILE=$(find cypress/reports -name "*.json" -type f | head -1)
+          
+          if [ -f "$JSON_FILE" ]; then
+            echo "📊 **Real-time metrics from Cypress JSON report:**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Extract real test data using jq
+            TOTAL_TESTS=$(jq -r '.stats.tests // 0' "$JSON_FILE")
+            PASSED_TESTS=$(jq -r '.stats.passes // 0' "$JSON_FILE")
+            FAILED_TESTS=$(jq -r '.stats.failures // 0' "$JSON_FILE")
+            PENDING_TESTS=$(jq -r '.stats.pending // 0' "$JSON_FILE")
+            SKIPPED_TESTS=$(jq -r '.stats.skipped // 0' "$JSON_FILE")
+            DURATION=$(jq -r '.stats.duration // 0' "$JSON_FILE")
+            START_TIME=$(jq -r '.stats.start' "$JSON_FILE")
+            END_TIME=$(jq -r '.stats.end' "$JSON_FILE")
+            
+            # Convert duration from ms to readable format
+            DURATION_SEC=$((DURATION / 1000))
+            DURATION_MIN=$((DURATION_SEC / 60))
+            DURATION_REMAINDER=$((DURATION_SEC % 60))
+            
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🧪 Total Tests | $TOTAL_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏸️ Pending | $PENDING_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏱️ Duration | ${DURATION_MIN}m ${DURATION_REMAINDER}s |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📺 Viewport | 1440x900 |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🏗️ Framework | Cypress + Page Object Model |" >> $GITHUB_STEP_SUMMARY
+            
+            # Calculate success rate
+            if [ "$TOTAL_TESTS" -gt 0 ]; then
+              SUCCESS_RATE=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+              echo "| 📈 Success Rate | ${SUCCESS_RATE}% |" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+          else
+            echo "⚠️ **No JSON report found** - Using static summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| 🚀 Pipeline Status | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📊 Framework | Cypress + POM |" >> $GITHUB_STEP_SUMMARY
+          fi
+          
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📋 Test Scenarios:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Authentication Flow" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚠️ Complete Purchase Journey (payment bug documented)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Form Validation Tests" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Cart Management" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚠️ Product Sections (aquatic navigation bug)" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚠️ Security Code Validation (accepts letters - bug)" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Critical Test Scenarios:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Authentication Flow** ✅ User login/logout validation" >> $GITHUB_STEP_SUMMARY
+          echo "- **Complete Purchase Journey** ⚠️ End-to-end flow (payment bug documented)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Form Validation** ✅ Required fields, email format, input validation" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cart Management** ✅ Add/remove items, cart state" >> $GITHUB_STEP_SUMMARY
+          echo "- **Product Sections** ⚠️ Navigation validation (aquatic section bug)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Code Validation** ⚠️ Input type validation (accepts letters - bug)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Invalid Credit Cards** ✅ Form-level validation testing" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🐛 Bugs Documented:" >> $GITHUB_STEP_SUMMARY
-          echo "1. **Payment Processing**: Valid cards rejected with 'tarjeta inválida'" >> $GITHUB_STEP_SUMMARY
-          echo "2. **Aquatic Section**: Navigation broken (href='#')" >> $GITHUB_STEP_SUMMARY  
-          echo "3. **Security Code**: Accepts letters instead of numbers only" >> $GITHUB_STEP_SUMMARY
+          echo "### 🐛 Production Bugs Documented:" >> $GITHUB_STEP_SUMMARY
+          echo "1. **💳 Payment Processing Bug**: Valid test cards (4111111111111111) rejected with 'tarjeta inválida'" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Impact**: Customers cannot complete purchases" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Business Priority**: CRITICAL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📁 **Download HTML Report**: Check artifacts for complete Mochawesome report" >> $GITHUB_STEP_SUMMARY
+          echo "2. **🏊‍♂️ Aquatic Section Navigation**: href='#' instead of functional link" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Impact**: Users cannot browse aquatic products" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Business Priority**: HIGH" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "3. **🔒 Security Code Input Validation**: Accepts letters instead of numbers only" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Impact**: Invalid payment data can reach processing" >> $GITHUB_STEP_SUMMARY
+          echo "   - **Business Priority**: MEDIUM" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📁 Artifacts & Reports:" >> $GITHUB_STEP_SUMMARY
+          echo "- 📊 **Mochawesome HTML Report**: Download from artifacts for detailed results" >> $GITHUB_STEP_SUMMARY
+          echo "- 📸 **Screenshots**: Failure screenshots available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- 🏗️ **Architecture**: Page Object Model with fixtures-based test data" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*🎯 **QA Craft Growth Challenge** | Automated by Huge QA Team | $(date '+%Y-%m-%d %H:%M:%S UTC')*" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
