@@ -44,7 +44,7 @@ jobs:
         if: always()
         run: |
           mkdir -p cypress/reports/html
-          npx mochawesome-merge cypress/reports/.jsons/*.json > cypress/reports/report.json
+          npx mochawesome-merge cypress/reports/json/*.json > cypress/reports/report.json
           npx mochawesome-report-generator cypress/reports/report.json --reportDir cypress/reports/html --inline
 
       - name: Generate Test Summary with Real Metrics
