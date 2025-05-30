@@ -7,6 +7,7 @@ yarn-error.log*
 # Cypress generated files
 cypress/screenshots/
 cypress/downloads/
+cypress/videos/
 
 # Test reports and results - cypress-mochawesome-reporter focused
 cypress/reports/
@@ -15,6 +16,7 @@ cypress/results/
 junit/
 reports/
 test-results/
+mochawesome.json
 
 # Coverage reports
 coverage/
@@ -94,6 +96,7 @@ playwright-report/
 # cypress-mochawesome-reporter specific ignores
 cypress/reports/*.json
 cypress/reports/*.html
+cypress/reports/videos/
 
 # Ignore any personal notes or TODO files
 TODO.md
