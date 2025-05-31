@@ -10,6 +10,9 @@
 // https://on.cypress.io/custom-commands
 // ***********************************************
 
+// Import mochawesome addContext for enhanced reporting
+const addContext = require('mochawesome/addContext');
+
 // Custom commands for enhanced testing
 
 // Enhanced wait with logging
@@ -50,21 +53,48 @@ Cypress.Commands.add('shouldBeVisibleAndContain', { prevSubject: true }, (subjec
     })
 })
 
-// Custom screenshot with context
+// Custom screenshot with context for mochawesome reporting
 Cypress.Commands.add('screenshotWithContext', (name, context = '') => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const screenshotName = `${timestamp}-${name}`
   
-  cy.screenshot(screenshotName)
-  
-  if (context) {
-    cy.log(`📸 Screenshot taken: ${screenshotName} - Context: ${context}`)
-  } else {
-    cy.log(`📸 Screenshot taken: ${screenshotName}`)
-  }
+  cy.screenshot(screenshotName).then(() => {
+    // Add screenshot to mochawesome report
+    cy.addTestContext(`Screenshot: ${screenshotName}`)
+    
+    if (context) {
+      cy.log(`📸 Screenshot taken: ${screenshotName} - Context: ${context}`)
+      cy.addTestContext(context)
+    } else {
+      cy.log(`📸 Screenshot taken: ${screenshotName}`)
+    }
+  })
 })
 
-// API request with logging
+// Command to add screenshots to mochawesome report
+Cypress.Commands.add('addScreenshotToReport', (name) => {
+  cy.screenshot(name).then(() => {
+    cy.addTestContext(`Screenshot: ${name}`)
+    cy.log(`📸 Screenshot added to report: ${name}`)
+  })
+})
+
+// Command to add any context to mochawesome report
+Cypress.Commands.add('addTestContext', (context) => {
+  cy.window().then((win) => {
+    // This ensures the context is added to the current test
+    if (typeof context === 'string') {
+      // For string context, just add it directly
+      addContext({ test: win.test || Cypress.currentTest }, context)
+    } else if (typeof context === 'object') {
+      // For object context with title and value
+      addContext({ test: win.test || Cypress.currentTest }, context)
+    }
+  })
+  cy.task('log', `📎 Adding context: ${JSON.stringify(context)}`)
+})
+
+// Enhanced API request with logging and report context
 Cypress.Commands.add('apiRequest', (method, url, body = null) => {
   const options = {
     method,
@@ -77,7 +107,44 @@ Cypress.Commands.add('apiRequest', (method, url, body = null) => {
   }
   
   cy.request(options).then((response) => {
-    cy.log(`🌐 API ${method} ${url} - Status: ${response.status}`)
+    const logMessage = `🌐 API ${method} ${url} - Status: ${response.status}`
+    cy.log(logMessage)
+    
+    // Add API response context to report
+    cy.addTestContext({
+      title: `API Request: ${method} ${url}`,
+      value: {
+        status: response.status,
+        duration: response.duration,
+        headers: response.headers,
+        body: typeof response.body === 'object' ? JSON.stringify(response.body, null, 2) : response.body
+      }
+    })
+    
     return cy.wrap(response)
   })
+})
+
+// Command to add failure context automatically
+Cypress.Commands.add('addFailureContext', (errorMessage) => {
+  cy.addTestContext({
+    title: 'Failure Information',
+    value: {
+      error: errorMessage,
+      timestamp: new Date().toISOString(),
+      url: location.href,
+      viewport: `${Cypress.config('viewportWidth')}x${Cypress.config('viewportHeight')}`
+    }
+  })
+})
+
+// Automatic screenshot on test failure with context
+Cypress.on('fail', (error) => {
+  const testTitle = Cypress.currentTest?.title || 'unknown-test'
+  const screenshotName = `failure-${testTitle.replace(/\s+/g, '-').toLowerCase()}`
+  
+  cy.screenshot(screenshotName, { capture: 'fullPage' })
+  cy.addFailureContext(error.message)
+  
+  throw error
 })

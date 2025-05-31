@@ -9,14 +9,25 @@ cypress/screenshots/
 cypress/downloads/
 cypress/videos/
 
-# Test reports and results - cypress-mochawesome-reporter focused
-cypress/reports/
+# Test reports and results - IMPORTANTE: mantener estructura pero ignorar contenido
+cypress/reports/json/*.json
+cypress/reports/html/
+cypress/reports/screenshots/
+cypress/reports/videos/
+cypress/reports/*.json
+cypress/reports/*.html
+cypress/reports/*.csv
+
+# Otros directorios de reportes
 mochawesome-report/
 cypress/results/
 junit/
 reports/
 test-results/
+
+# Archivos específicos de mochawesome
 mochawesome.json
+mochawesome.html
 
 # Coverage reports
 coverage/
@@ -88,22 +99,19 @@ cypress.config.local.js
 
 # Cypress specific ignores
 cypress/fixtures/.DS_Store
-
-# Don't commit sensitive test data
 cypress/fixtures/sensitive/
 playwright-report/
 
-# cypress-mochawesome-reporter specific ignores
-cypress/reports/*.json
-cypress/reports/*.html
-cypress/reports/videos/
+# Cache directories
+.cache/
+.parcel-cache/
+.cypress/
 
 # Ignore any personal notes or TODO files
 TODO.md
 NOTES.md
 personal-notes/
 
-# Cache directories
-.cache/
-.parcel-cache/
-.cypress/
+# Permitir estructura de directorios pero ignorar contenido
+!cypress/reports/.gitkeep
+!scripts/.gitkeep
