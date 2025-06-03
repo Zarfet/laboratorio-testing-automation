@@ -1,0 +1,161 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install jq for JSON processing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify Cypress installation
+        run: npx cypress verify
+
+      - name: Create reports directory
+        run: mkdir -p cypress/reports/{json,html,screenshots}
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+          spec: cypress/e2e/**/*.cy.js
+          config: video=false,viewportWidth=1440,viewportHeight=900
+        continue-on-error: true
+
+      - name: Merge and Generate Mochawesome reports
+        if: always()
+        run: |
+          echo "🔄 Checking generated reports..."
+          find cypress/reports -name "*.json" -type f | head -10
+          
+          echo "📊 Extracting test metrics..."
+          node scripts/extract-metrics.js || echo "⚠️ Metrics extraction completed with warnings"
+
+      - name: Generate Test Summary
+        if: always()
+        run: |
+          echo "## 🧪 QA Craft Growth Challenge - Test Results (${{ matrix.browser }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          METRICS_FILE="cypress/reports/test-metrics.json"
+          
+          if [ -f "$METRICS_FILE" ]; then
+            echo "### 📊 Test Metrics" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            
+            TOTAL_TESTS=$(jq -r '.totalTests // 0' "$METRICS_FILE")
+            PASSED_TESTS=$(jq -r '.totalPasses // 0' "$METRICS_FILE")
+            FAILED_TESTS=$(jq -r '.totalFailures // 0' "$METRICS_FILE")
+            PENDING_TESTS=$(jq -r '.totalPending // 0' "$METRICS_FILE")
+            SKIPPED_TESTS=$(jq -r '.totalSkipped // 0' "$METRICS_FILE")
+            DURATION=$(jq -r '.durationInSeconds // 0' "$METRICS_FILE")
+            PASS_RATE=$(jq -r '.passRate // "0%"' "$METRICS_FILE")
+            STATUS=$(jq -r '.status // "UNKNOWN"' "$METRICS_FILE")
+            
+            echo "| 🧪 Total Tests | $TOTAL_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏳ Pending | $PENDING_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED_TESTS |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🕐 Duration | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+            echo "| 📈 Pass Rate | $PASS_RATE |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🌐 Browser | ${{ matrix.browser }} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🏆 Status | $STATUS |" >> $GITHUB_STEP_SUMMARY
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Agregar badge de estado
+            if [ "$STATUS" = "PASSED" ]; then
+              echo "### ✅ All tests passed!" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### ❌ Some tests failed!" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+          else
+            echo "❌ No metrics file found at $METRICS_FILE" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Available files in reports directory:" >> $GITHUB_STEP_SUMMARY
+            ls -la cypress/reports/ >> $GITHUB_STEP_SUMMARY || echo "No reports directory found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-reports-${{ matrix.browser }}
+          path: |
+            cypress/reports/
+            cypress/screenshots/
+          retention-days: 30
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mochawesome-html-report-${{ matrix.browser }}
+          path: cypress/reports/html/index.html
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots-failure-${{ matrix.browser }}
+          path: cypress/screenshots/
+          retention-days: 10
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'cypress/reports/test-metrics.json';
+            
+            if (fs.existsSync(path)) {
+              const metrics = JSON.parse(fs.readFileSync(path, 'utf8'));
+              const status = metrics.status === 'PASSED' ? '✅' : '❌';
+              
+              const comment = `## ${status} Test Results - ${{ matrix.browser }}
+              
+              | Metric | Value |
+              |--------|-------|
+              | Total Tests | ${metrics.totalTests} |
+              | Passed | ${metrics.totalPasses} |
+              | Failed | ${metrics.totalFailures} |
+              | Pass Rate | ${metrics.passRate} |
+              | Duration | ${metrics.durationInSeconds}s |
+              | Status | ${metrics.status} |
+              
+              [View detailed report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }

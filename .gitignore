@@ -1,0 +1,117 @@
+# Dependency directories
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cypress generated files
+cypress/screenshots/
+cypress/downloads/
+cypress/videos/
+
+# Test reports and results - IMPORTANTE: mantener estructura pero ignorar contenido
+cypress/reports/json/*.json
+cypress/reports/html/
+cypress/reports/screenshots/
+cypress/reports/videos/
+cypress/reports/*.json
+cypress/reports/*.html
+cypress/reports/*.csv
+
+# Otros directorios de reportes
+mochawesome-report/
+cypress/results/
+junit/
+reports/
+test-results/
+
+# Archivos específicos de mochawesome
+mochawesome.json
+mochawesome.html
+
+# Coverage reports
+coverage/
+.coverage/
+*.lcov
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+cypress.env.json
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Temporary folders
+tmp/
+temp/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Test artifacts that shouldn't be committed
+*.har
+*.trace
+*.perf
+
+# Local configuration files
+config.local.js
+cypress.config.local.js
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Cypress specific ignores
+cypress/fixtures/.DS_Store
+cypress/fixtures/sensitive/
+playwright-report/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.cypress/
+
+# Ignore any personal notes or TODO files
+TODO.md
+NOTES.md
+personal-notes/
+
+# Permitir estructura de directorios pero ignorar contenido
+!cypress/reports/.gitkeep
+!scripts/.gitkeep
