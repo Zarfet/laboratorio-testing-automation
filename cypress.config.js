@@ -9,6 +9,7 @@ module.exports = defineConfig({
     charts: true,
     embeddedScreenshots: true,
     inlineAssets: true,
+    saveJson: true,
     saveAllAttempts: false,
     overwrite: true, // Cambiado de false a true para mejor manejo de imágenes
     quiet: false,
